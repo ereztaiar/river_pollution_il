@@ -5,7 +5,7 @@
     "x": 8,
     "y": 616,
     "z": 8000,
-    "height": 456,
+    "height": 416,
     "width": 648,
     "tabOrder": 8000
   },
@@ -155,5 +155,23 @@
       ]
     },
     "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "a1748021685c83ac5c72",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_Measures"
+              }
+            },
+            "Property": "Selected Location Text"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }
