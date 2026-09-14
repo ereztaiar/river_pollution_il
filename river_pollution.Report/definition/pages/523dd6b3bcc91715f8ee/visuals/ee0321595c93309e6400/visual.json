@@ -1,0 +1,257 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "ee0321595c93309e6400",
+  "position": {
+    "x": 0,
+    "y": 1040,
+    "z": 14001,
+    "height": 40,
+    "width": 1920,
+    "tabOrder": 14001
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": {
+                      "propertyIdentifier": {
+                        "objectName": "values",
+                        "propertyName": "expr"
+                      },
+                      "selector": {
+                        "id": "MyName"
+                      }
+                    },
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "10pt",
+                      "color": "#233a48"
+                    }
+                  },
+                  {
+                    "value": "   |   GitHub: ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#436e67"
+                    }
+                  },
+                  {
+                    "value": "github.com/ereztaiar/river_pollution_il",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#0563c1"
+                    },
+                    "url": "https://github.com/ereztaiar/river_pollution_il"
+                  },
+                  {
+                    "value": "   |   LinkedIn:  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#436e67"
+                    }
+                  },
+                  {
+                    "value": "https://www.linkedin.com/in/erez-taiar/",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#436e67"
+                    },
+                    "url": "https://www.linkedin.com/in/erez-taiar/"
+                  },
+                  {
+                    "value": " ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#436e67"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "expr": {
+              "expr": {
+                "Min": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "Subquery": {
+                          "Query": {
+                            "Version": 2,
+                            "From": [
+                              {
+                                "Name": "_",
+                                "Entity": "_Measures",
+                                "Type": 0
+                              }
+                            ],
+                            "Select": [
+                              {
+                                "Measure": {
+                                  "Expression": {
+                                    "SourceRef": {
+                                      "Source": "_"
+                                    }
+                                  },
+                                  "Property": "Private Data - Name"
+                                },
+                                "Name": "_Measures.Name"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "Property": "_Measures.Name"
+                    }
+                  },
+                  "IncludeAllTypes": 1
+                },
+                "Annotations": {
+                  "NaturalLanguage": {
+                    "version": 1,
+                    "kind": "NaturalLanguage",
+                    "annotation": {
+                      "name": "MyName",
+                      "utterance": "Name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "MyName"
+          }
+        },
+        {
+          "properties": {
+            "expr": {
+              "expr": {
+                "Min": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "Subquery": {
+                          "Query": {
+                            "Version": 2,
+                            "From": [
+                              {
+                                "Name": "_",
+                                "Entity": "_Measures",
+                                "Type": 0
+                              }
+                            ],
+                            "Select": [
+                              {
+                                "Measure": {
+                                  "Expression": {
+                                    "SourceRef": {
+                                      "Source": "_"
+                                    }
+                                  },
+                                  "Property": "Private Data LinkedIn"
+                                },
+                                "Name": "_Measures.Private Data LinkedIn"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "Property": "_Measures.Private Data LinkedIn"
+                    }
+                  },
+                  "IncludeAllTypes": 1
+                },
+                "Annotations": {
+                  "NaturalLanguage": {
+                    "version": 1,
+                    "kind": "NaturalLanguage",
+                    "annotation": {
+                      "name": "LinkedIn",
+                      "utterance": "LinkedIn"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "LinkedIn"
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#bed0a6'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
