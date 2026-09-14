@@ -1,0 +1,119 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "9ea2b5415ec897104034",
+  "position": {
+    "x": 8,
+    "y": 8,
+    "z": 0,
+    "height": 200,
+    "width": 640,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "מגמה ועונתיות",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "13pt",
+                      "color": "#233a48"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "הגרף העליון משווה בין השנים חודש מול חודש עבור האתר וסוג החיידק שנבחרו (קו לכל שנה), כדי לחשוף דפוסים עונתיים (למשל קפיצות בעונת הגשמים). כמו בשאר הדוח, מוצג הריכוז הגבוה ביותר שנמדד בכל חודש, TNTC מוצג בתקרה הדינמית והציר האנכי לוגריתמי. הגרף התחתון עוקב אחרי אחוזי TNTC / מתחת לסף גילוי לאורך זמן, ומראה אם איכות המדידה במעבדה עצמה משתנה, בנפרד מרמת הזיהום בפועל.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "10pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#e5e3ce'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

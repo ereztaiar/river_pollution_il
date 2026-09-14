@@ -1,0 +1,100 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 50,
+            "y": 0
+          },
+          "nodeIndex": "DimDate",
+          "nodeLineageTag": "dd428b52-1d81-4c1f-a9ed-fa7907f5c4e1",
+          "size": {
+            "height": 412,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 222.8590867344127,
+            "y": 429.30058325968685
+          },
+          "nodeIndex": "DimLocation",
+          "nodeLineageTag": "9b353ce1-13f3-496d-bde5-80c471f83a88",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 414.010456919415,
+            "y": 6.57812498993178
+          },
+          "nodeIndex": "FactRiverPollution",
+          "nodeLineageTag": "3edd903e-8cea-4efa-9ea2-85f88dc38f2a",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 594.26687944350726,
+            "y": 483.62325257049793
+          },
+          "nodeIndex": "DimBacterialIndex",
+          "nodeLineageTag": "b5e4c6d7-6794-419a-b41f-23a9d4f5ddc1",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 828.26687944350726,
+            "y": 253.81162628524896
+          },
+          "nodeIndex": "_Measures",
+          "nodeLineageTag": "1364abca-3d45-433d-80bf-55d51246aeaa",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1062.2668794435072,
+            "y": 253.81162628524896
+          },
+          "nodeIndex": "DimBacterialIndexTooltip",
+          "nodeLineageTag": "fe6939ea-435b-46d0-80d4-54bd7b42304b",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

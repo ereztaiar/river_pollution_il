@@ -1,0 +1,13 @@
+{
+  "name": "River Palette",
+  "dataColors": [
+    "#233a48",
+    "#436e67",
+    "#6c9585",
+    "#bed0a6",
+    "#e5e3ce"
+  ],
+  "foreground": "#233a48",
+  "foregroundNeutralSecondary": "#436e67",
+  "tableAccent": "#233a48"
+}

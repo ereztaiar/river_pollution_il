@@ -1,0 +1,260 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "243d2219009830fb6fe8",
+  "position": {
+    "x": 32,
+    "y": 128,
+    "z": 1000,
+    "height": 704,
+    "width": 896.00000000000011,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "קוליפורם צואתי",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt",
+                      "color": "#233a48"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Fecal Coliform",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#436e67"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "קבוצת חיידקים המצויה במערכת העיכול של בני אדם ובעלי חיים בעלי דם חם. נוכחותם במים היא הסימן הכללי ביותר לזיהום צואתי אפשרי.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "למה זה בעייתי: זיהום צואתי עלול לשאת גם חיידקים, נגיפים וטפילים מחוללי מחלות. מגע עם מים מזוהמים עלול לגרום למחלות מעיים ושלשולים, וכן לזיהומים בעור, בעיניים ובאוזניים.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "E.coli MUG",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt",
+                      "color": "#233a48"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Escherichia coli",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#436e67"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "מין חיידק ספציפי מתוך קבוצת הקוליפורם הצואתי, כמעט בלעדי למערכת העיכול של בני אדם ובעלי חיים, ולכן מדד מדויק יותר לזיהום צואתי טרי.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "למה זה בעייתי: ריכוזים גבוהים מצביעים על זיהום קרוב במקור (למשל שפכים או נגר חקלאי) ועל סיכון בריאותי ישיר לאנשים הבאים במגע עם המים. בדוח זה, ערך מעל 400 CFU/100 מ\"ל נחשב לחריגה מהסף המומלץ.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "סטרפטוקוק/אנטרוקוק ממקור צואתי",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt",
+                      "color": "#233a48"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Fecal Streptococcus / Enterococcus",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#436e67"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "קבוצת חיידקים נוספת שמקורה במעי, עמידה יותר בסביבה (כולל מים מלוחים) ושורדת זמן רב יותר מאשר קוליפורם צואתי. משמשת לאישור ולחיזוק הממצא כאשר יש חשד לזיהום.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "למה זה בעייתי: כמו יתר המדדים, נוכחות גבוהה מעידה על זיהום צואתי ופוטנציאל למחלות. שילוב של כמה אינדיקטורים יחד מגביר את מהימנות האבחנה של הזיהום.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "20pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#e5e3ce'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,149 @@
+table DimDate
+	lineageTag: dd428b52-1d81-4c1f-a9ed-fa7907f5c4e1
+	dataCategory: Time
+
+	column DateID
+		dataType: int64
+		formatString: 0
+		lineageTag: 0f273109-619d-4cce-b096-f84e0cacf7f3
+		summarizeBy: none
+		sourceColumn: DateID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: c6f2285e-671b-4f07-a8db-cfae97c837ad
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 5214c301-22c9-49e2-a5e0-6ba977824e57
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = User
+
+	column Quarter
+		dataType: string
+		lineageTag: ff2c2496-6c80-4530-9772-020742311ff4
+		summarizeBy: none
+		sourceColumn: Quarter
+		sortByColumn: QuarterIndex
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		dataType: int64
+		formatString: 0
+		lineageTag: 1fd8bd80-d05e-406c-967d-7ef899b1b01c
+		summarizeBy: none
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = User
+
+	column MonthName
+		dataType: string
+		lineageTag: 9d1a5f96-d794-48c3-b848-c34c43095036
+		summarizeBy: none
+		sourceColumn: MonthName
+		sortByColumn: Month
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Day
+		dataType: int64
+		formatString: 0
+		lineageTag: 8e79d42b-edbb-45f6-b613-d4bfbb9c282e
+		summarizeBy: none
+		sourceColumn: Day
+
+		annotation SummarizationSetBy = User
+
+	column DayOfWeek
+		dataType: string
+		lineageTag: eda1ed71-d44c-45f1-95ef-92ac229f070a
+		summarizeBy: none
+		sourceColumn: DayOfWeek
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonth
+		dataType: string
+		lineageTag: eb180b73-c0da-48c7-88e7-694d7f24fd27
+		summarizeBy: none
+		sourceColumn: YearMonth
+
+		annotation SummarizationSetBy = Automatic
+
+	column QuarterIndex
+		dataType: int64
+		formatString: 0
+		lineageTag: 3514f769-634d-430c-bdd3-9f96caf169a1
+		summarizeBy: none
+		sourceColumn: QuarterIndex
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Date Hierarchy'
+		lineageTag: 247efa2f-9dd6-48bc-b39a-269ce17ea76b
+
+		level Year
+			lineageTag: a1967650-fd27-4f73-af97-021dd4dbe9db
+			column: Year
+
+		level Quarter
+			lineageTag: cfd4a790-dda1-4d94-ac1b-781605789293
+			column: Quarter
+
+		level Month
+			lineageTag: 416cc2ab-284e-4b45-9ec9-b963234bf173
+			column: Month
+
+		level Day
+			lineageTag: 5b194935-e60f-4c3a-86ad-155d3d1aea7f
+			column: Day
+
+	partition DimDate = m
+		mode: import
+		source =
+				let
+				    Source = FactRiverPollution_src,
+				    MinDate = Date.From(List.Min(Source[Sample Date])),
+				    MaxDate = Date.From(List.Max(Source[Sample Date])),
+				    NumberOfDays = Duration.Days(MaxDate - MinDate) + 1,
+				    DateList = List.Dates(MinDate, NumberOfDays, #duration(1,0,0,0)),
+				    #"Converted to Table" = Table.FromList(DateList, Splitter.SplitByNothing(), {"Date"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Converted to Table", {{"Date", type date}}),
+				    #"Added Year" = Table.AddColumn(#"Changed Type", "Year", each Date.Year([Date]), Int64.Type),
+				    #"Added Quarter" = Table.AddColumn(#"Added Year", "Quarter", each "Q" & Text.From(Date.QuarterOfYear([Date])), type text),
+				    #"Added Quarter Index" = Table.AddColumn(#"Added Quarter", "QuarterIndex", each Text.From(Date.QuarterOfYear([Date])), type text),
+				    #"Added Month" = Table.AddColumn(#"Added Quarter Index", "Month", each Date.Month([Date]), Int64.Type),
+				    #"Added MonthName" = Table.AddColumn(#"Added Month", "MonthName", each Date.MonthName([Date]), type text),
+				    #"Added Day" = Table.AddColumn(#"Added MonthName", "Day", each Date.Day([Date]), Int64.Type),
+				    #"Added DayOfWeek" = Table.AddColumn(#"Added Day", "DayOfWeek", each Date.DayOfWeekName([Date]), type text),
+				    #"Added YearMonth" = Table.AddColumn(#"Added DayOfWeek", "YearMonth", each Date.ToText([Date], "yyyy-MM"), type text),
+				    #"Sorted Rows" = Table.Sort(#"Added YearMonth",{{"Date", Order.Ascending}}),
+				    #"Added Index" = Table.AddIndexColumn(#"Sorted Rows", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Index",{{"Index", "DateID"}}),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Renamed Columns",{"DateID", "Date", "Year", "Quarter", "QuarterIndex", "Month", "MonthName", "Day", "DayOfWeek", "YearMonth"}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Reordered Columns",{{"QuarterIndex", Int64.Type}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

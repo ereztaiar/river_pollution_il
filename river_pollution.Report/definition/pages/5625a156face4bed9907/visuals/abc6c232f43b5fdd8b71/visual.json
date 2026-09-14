@@ -1,0 +1,223 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "abc6c232f43b5fdd8b71",
+  "position": {
+    "x": 8,
+    "y": 8,
+    "z": 1000,
+    "height": 408,
+    "width": 760,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "מה מסמנים ארבעת הקווים בגרף?",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#233a48"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "● ",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#898781"
+                    }
+                  },
+                  {
+                    "value": "קו מקווקו אפור, תקרת TNTC: ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#898781"
+                    }
+                  },
+                  {
+                    "value": "ריכוזי CFU/100 מ\"ל כאן נעים ממספרים בודדים ועד מעל 100,000. תוצאת TNTC פירושה שצלחת המעבדה הייתה מכוסה לחלוטין: המספר האמיתי אינו ידוע, אך הוא גבוה לפחות כמו סף הספירה של הצלחת. הקו מסמן פי 1.15 מהתוצאה האמיתית הגבוהה ביותר (שאינה TNTC) הנמצאת כעת בתצוגה, ועמודות TNTC מצוירות בגובה זה כדי שיהיה ברור שמדובר בחריגה מעבר לסולם האמיתי, לא במספר מדוד בפועל.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "● ",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#d03b3b"
+                    }
+                  },
+                  {
+                    "value": "קו אדום רציף, הסף המומלץ (400): ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#d03b3b"
+                    }
+                  },
+                  {
+                    "value": "ערך של 400 CFU/100 מ\"ל הוא הסף שממנו תוצאה נחשבת לחריגה בדוח זה, בהתאם למדד Exceedance %. דגימות מעל קו זה מצביעות על ריכוז זיהום צואתי שעלול לסכן בריאות. ערך זה זהה גם לסף איכות מים \"טובה\" לסטרפטוקוק/אנטרוקוק לפי תקן האיחוד האירופי (EU Bathing Water Directive), שנעשה בו שימוש בהיעדר תקן ישראלי, ראו הסבר בעמוד הבית.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "● ",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#2a78d6"
+                    }
+                  },
+                  {
+                    "value": "קו כחול מקווקו, ממוצע: ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#2a78d6"
+                    }
+                  },
+                  {
+                    "value": "מסמן את ריכוז ה-CFU הממוצע מתוך כל הדגימות הנמצאות כעת בתצוגה (בהתאם לבחירה במסננים), ומאפשר להשוות כל חודש בודד למגמה הכללית.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "● ",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#1baf7a"
+                    }
+                  },
+                  {
+                    "value": "קו ירוק מנוקד, חציון: ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#1baf7a"
+                    }
+                  },
+                  {
+                    "value": "מסמן את הערך החציוני של הדגימות בתצוגה, מדד שפחות מושפע מקצוות קיצוניים (כגון דגימה חריגה בודדת) בהשוואה לממוצע.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#e5e3ce'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

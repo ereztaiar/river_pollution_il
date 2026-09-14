@@ -1,0 +1,178 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "f3d8b2e7a5c94610d8b3",
+  "position": {
+    "x": 8,
+    "y": 8,
+    "z": 2000,
+    "height": 280,
+    "width": 640,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "מה מסמנים הגדלים והצבעים על המפה?",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#233a48"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "גודל הבועה: ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#233a48"
+                    }
+                  },
+                  {
+                    "value": "התוצאה הגבוהה ביותר שנמדדה באתר (לא ממוצע), כך שנקודת קיצון בודדת אינה נעלמת בתוך הנתונים. הגודל דחוס בסולם לוגריתמי כדי שאתר קיצוני אחד לא יקטין את כל שאר הבועות לנקודה.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "צבע הבועה: ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#233a48"
+                    }
+                  },
+                  {
+                    "value": "אותה תוצאה גבוהה ביותר, על סולם חומרה מירוק (נמוך) דרך צהוב וכתום ועד אדום (גבוה מאוד), יחסית לתוצאה הגבוהה ביותר שנצפתה בתצוגה הנוכחית.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "● ",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#898781"
+                    }
+                  },
+                  {
+                    "value": "אפור: ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt",
+                      "color": "#898781"
+                    }
+                  },
+                  {
+                    "value": "התוצאה הגבוהה ביותר באתר הייתה TNTC (פלטה מכוסה). אין מספר אמיתי למדוד, זהו סימון \"מחוץ לסולם\" ולא רמת זיהום נמוכה.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "14pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#e5e3ce'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

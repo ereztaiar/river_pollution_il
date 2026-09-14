@@ -1,0 +1,24 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: he-IL
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["river_pollution_2019","river_pollution_2020-2021","river_pollution_2022","river_pollution_2023","river_pollution_2024","river_pollution_2025","river_pollution_2026","FactRiverPollution_src","FactRiverPollution","DimLocation","DimDate","DimBacterialIndex","_Measures","locations_with_coordinates","DimBacterialIndexTooltip"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table FactRiverPollution
+ref table DimLocation
+ref table DimDate
+ref table DimBacterialIndex
+ref table _Measures
+ref table DimBacterialIndexTooltip
+
+ref cultureInfo en-US
+

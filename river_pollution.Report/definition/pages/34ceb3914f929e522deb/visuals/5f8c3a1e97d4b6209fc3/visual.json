@@ -1,0 +1,132 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "5f8c3a1e97d4b6209fc3",
+  "position": {
+    "x": 32,
+    "y": 864,
+    "z": 1500,
+    "height": 124,
+    "width": 1856,
+    "tabOrder": 1500
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "הסף המומלץ לסטרפטוקוק/אנטרוקוק: מקור הנתון",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Calibri",
+                      "fontSize": "16pt",
+                      "color": "#233a48"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "No Israeli standard found — EU standard used instead",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "12pt",
+                      "color": "#436e67"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "לא אותר תקן ישראלי רשמי המגדיר סף מספרי לחיידק זה במי נחלים, למרות בדיקה מקיפה של פרסומי משרד הבריאות והרשויות המקומיות. לכן מוצג בדוח זה סף איכות מים \"טובה\" לפי תקן האיחוד האירופי למי רחצה פנים-יבשתיים (EU Bathing Water Directive 2006/7/EC): 400 CFU/100 מ\"ל — ערך זהה מספרית לסף החריגה הקיים כבר עבור קוליפורם צואתי/E.coli MUG בדוח זה.",
+                    "textStyle": {
+                      "fontFamily": "Calibri",
+                      "fontSize": "13pt"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "right"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#e5e3ce'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

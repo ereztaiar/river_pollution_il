@@ -1,0 +1,31 @@
+/// Disconnected duplicate of DimBacterialIndex[Bacterial index] (no relationship to
+/// Fact/DimBacterialIndex) — exists only so the "Bacterial Counts by Month" report-page
+/// tooltip (donut + bar breakdown of all three bacteria) isn't collapsed to a single
+/// slice/bar by the BacterialID filter that hovering a data point inherits from the
+/// source chart's legend. See [Tooltip CFU Value] in _Measures for how it's reconnected
+/// via TREATAS. Column is deliberately renamed (not just duplicated) so Power BI Desktop's
+/// relationship autodetect has no matching column name to key a relationship off of.
+table DimBacterialIndexTooltip
+	lineageTag: fe6939ea-435b-46d0-80d4-54bd7b42304b
+
+	column 'Bacterial index (Tooltip)'
+		dataType: string
+		lineageTag: 23f5dfab-3505-4bbf-8c63-c8409d26b390
+		summarizeBy: none
+		sourceColumn: Bacterial index (Tooltip)
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimBacterialIndexTooltip = m
+		mode: import
+		source =
+				let
+				    Source = DimBacterialIndex,
+				    #"Removed Other Columns" = Table.SelectColumns(Source, {"Bacterial index"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns", {{"Bacterial index", "Bacterial index (Tooltip)"}}),
+				    #"Removed Duplicates" = Table.Distinct(#"Renamed Columns")
+				in
+				    #"Removed Duplicates"
+
+	annotation PBI_ResultType = Table
+

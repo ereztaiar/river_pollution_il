@@ -1,0 +1,168 @@
+expression FactRiverPollution_src =
+		let
+		    Source = Table.Combine({river_pollution_2019, #"river_pollution_2020-2021", river_pollution_2022, river_pollution_2023, river_pollution_2024, river_pollution_2025, river_pollution_2026}),
+		    #"Removed Blank Rows" = Table.SelectRows(Source, each not List.IsEmpty(List.RemoveMatchingItems(Record.FieldValues(_), {"", null}))),
+		    #"Replaced Value" = Table.ReplaceValue(#"Removed Blank Rows",">1000.",">1000",Replacer.ReplaceText,{"Result CFU/100 ml"}),
+		    #"Added Custom" = Table.AddColumn(#"Replaced Value", "Result_Qualifier", each if Text.StartsWith(Text.From([#"Result CFU/100 ml"]), "<") then "<"
+		else if Text.StartsWith(Text.From([#"Result CFU/100 ml"]), ">") then ">"
+		else if [#"Result CFU/100 ml"] = "פלטה מכוסה" then "TNTC"
+		else "="),
+		    #"Added Custom1" = Table.AddColumn(#"Added Custom", "Result_Numeric", each if [#"Result CFU/100 ml"] = "פלטה מכוסה" then null
+		else try Number.FromText(Text.Select(Text.From([#"Result CFU/100 ml"]), {"0".."9"})) otherwise null),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Added Custom1",{{"Result_Numeric", Int64.Type}, {"Result_Qualifier", type text}}),
+		    #"Replaced Value2" = Table.ReplaceValue(#"Changed Type","","עין כיף",Replacer.ReplaceValue,{"Site"}),
+		    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","ירדן ","ירדן",Replacer.ReplaceText,{"Site"}),
+		    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","ירדןטבריה","ירדן טבריה",Replacer.ReplaceText,{"Site"}),
+		    #"Filtered Rows" = Table.SelectRows(#"Replaced Value3", each true),
+		    #"Trimmed Text" = Table.TransformColumns(#"Filtered Rows",{{"Location Name", Text.Trim, type text}}),
+		    #"Filtered Rows1" = Table.SelectRows(#"Trimmed Text", each true),
+		    #"Trimmed Text1" = Table.TransformColumns(#"Filtered Rows1",{{"Site", Text.Trim, type text}, {"Bacterial index", Text.Trim, type text}}),
+		    #"Changed Type1" = Table.TransformColumnTypes(#"Trimmed Text1",{{"Sample Date", type datetime}}),
+		    #"Replaced Value5" = Table.ReplaceValue(#"Changed Type1","כזיב בריכת עין תמיר","כזיב בריכת עין טמיר",Replacer.ReplaceText,{"Location Name"}),
+		    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","כזיב עין תמיר","כזיב עין טמיר",Replacer.ReplaceText,{"Location Name"}),
+		    #"Sorted Rows" = Table.Sort(#"Replaced Value6",{{"Sample Date", Order.Ascending}}),
+		    #"Added Index" = Table.AddIndexColumn(#"Sorted Rows", "Index", 1, 1, Int64.Type),
+		    #"Reordered Columns" = Table.ReorderColumns(#"Added Index",{"Index", "Location Point", "Sample Date", "Bacterial index", "Result CFU/100 ml", "Location Name", "Site", "Result_Qualifier", "Result_Numeric"}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Reordered Columns",{{"Index", "ID"}}),
+		    #"Replaced Value7" = Table.ReplaceValue(#"Renamed Columns","קוליפורם צואתי ממוצע","קוליפורם צואתי",Replacer.ReplaceText,{"Bacterial index"})
+		in
+		    #"Replaced Value7"
+	lineageTag: e843ce6c-6e1f-48e4-a28d-2cf0c0e1a768
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression river_pollution_2019 =
+		let
+		  Source = Csv.Document(File.Contents("C:\Projects\analysis\river_pollution\data\csv\2019.csv"), [Delimiter = ",", Columns = 8, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Changed column type" = Table.TransformColumnTypes(Source, {{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}}),
+		    #"Removed Top Rows" = Table.Skip(#"Changed column type",1),
+		    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"קוד נקודה", type text}, {"תאריך דיגום", type datetime}, {"אנליט", type text}, {"תוצאה CFU/100 ml", type text}, {"שם נקודה", type text}, {"אתר", type text}, {"", type text}, {"_1", type text}}),
+		    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"", "_1"}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Removed Columns",{{"קוד נקודה", "Location Point"}, {"תאריך דיגום", "Sample Date"}, {"אנליט", "Bacterial index"}, {"שם נקודה", "Location Name"}, {"אתר", "Site"}, {"תוצאה CFU/100 ml", "Result CFU/100 ml"}})
+		in
+		    #"Renamed Columns"
+	lineageTag: 25914835-4063-4b6a-9697-1f7786838ae3
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression river_pollution_2020-2021 =
+		let
+		  Source = Csv.Document(File.Contents("C:\Projects\analysis\river_pollution\data\csv\2020-2021.csv"), [Delimiter = ",", Columns = 6, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+		  #"Changed column type" = Table.TransformColumnTypes(Source, {{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}}),
+		    #"Removed Top Rows" = Table.Skip(#"Changed column type",1),
+		    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"קוד נקודה", type text}, {"תאריך דיגום", type datetime}, {"מדד בקטריאלי", type text}, {"תוצאה       CFU/100 ml", type text}, {"שם נקודה", type text}, {"אתר", type text}}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"קוד נקודה", "Location Point"}, {"תאריך דיגום", "Sample Date"}, {"מדד בקטריאלי", "Bacterial index"}, {"שם נקודה", "Location Name"}, {"אתר", "Site"}, {"תוצאה       CFU/100 ml", "Result CFU/100 ml"}})
+		in
+		  #"Renamed Columns"
+	lineageTag: c480cd3c-84c8-4424-9b05-9cb9cfd6a469
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression river_pollution_2022 =
+		let
+		  Source = Csv.Document(File.Contents("C:\Projects\analysis\river_pollution\data\csv\2022.csv"), [Delimiter = ",", Columns = 8, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Changed column type" = Table.TransformColumnTypes(Source, {{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}}),
+		    #"Removed Top Rows" = Table.Skip(#"Changed column type",1),
+		    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"קוד נקודה", type text}, {"תאריך דיגום", type datetime}, {"מדד בקטריאלי", type text}, {"תוצאה     CFU/100 ml", type text}, {"שם נקודה", type text}, {"אתר", type text}, {"", type text}, {"_1", type text}}),
+		    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"", "_1"}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Removed Columns",{{"קוד נקודה", "Location Point"}, {"תאריך דיגום", "Sample Date"}, {"מדד בקטריאלי", "Bacterial index"}, {"שם נקודה", "Location Name"}, {"אתר", "Site"}, {"תוצאה     CFU/100 ml", "Result CFU/100 ml"}})
+		in
+		    #"Renamed Columns"
+	lineageTag: 0fbbef9d-de69-4f48-8852-6b493e248e48
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression river_pollution_2023 =
+		let
+		  Source = Csv.Document(File.Contents("C:\Projects\analysis\river_pollution\data\csv\2023.csv"), [Delimiter = ",", Columns = 6, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Changed column type" = Table.TransformColumnTypes(Source, {{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}}),
+		    #"Removed Top Rows" = Table.Skip(#"Changed column type",1),
+		    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"קוד נקודה", type text}, {"תאריך דיגום", type datetime}, {"מדד בקטריאלי", type text}, {"תוצאה     CFU/100 ml", type text}, {"שם נקודה", type text}, {"אתר", type text}}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"קוד נקודה", "Location Point"}, {"תאריך דיגום", "Sample Date"}, {"מדד בקטריאלי", "Bacterial index"}, {"שם נקודה", "Location Name"}, {"אתר", "Site"}, {"תוצאה     CFU/100 ml", "Result CFU/100 ml"}})
+		in
+		  #"Renamed Columns"
+	lineageTag: 34e5525d-0b4b-4d77-a60b-610f4e50ad11
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression river_pollution_2024 =
+		let
+		  Source = Csv.Document(File.Contents("C:\Projects\analysis\river_pollution\data\csv\2024.csv"), [Delimiter = ",", Columns = 12, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Changed column type" = Table.TransformColumnTypes(Source, {{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}, {"Column7", type text}, {"Column8", type text}, {"Column9", type text}, {"Column10", type text}, {"Column11", type text}, {"Column12", type text}}),
+		    #"Removed Top Rows" = Table.Skip(#"Changed column type",1),
+		    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"קוד נקודה", type text}, {"תאריך דיגום", type datetime}, {"מדד בקטריאלי", type text}, {"תוצאה        CFU/100 ml", type text}, {"שם נקודה", type text}, {"אתר", type text}, {"", type text}, {"_1", type text}, {"_2", type text}, {"_3", type text}, {"_4", type text}, {"_5", type text}}),
+		    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"", "_1", "_2", "_3", "_4", "_5"}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Removed Columns",{{"קוד נקודה", "Location Point"}, {"תאריך דיגום", "Sample Date"}, {"מדד בקטריאלי", "Bacterial index"}, {"שם נקודה", "Location Name"}, {"אתר", "Site"}, {"תוצאה        CFU/100 ml", "Result CFU/100 ml"}})
+		in
+		    #"Renamed Columns"
+	lineageTag: ef5a8e6b-c6cb-4b06-85ec-60b0b0eaa680
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression river_pollution_2025 =
+		let
+		  Source = Csv.Document(File.Contents("C:\Projects\analysis\river_pollution\data\csv\2025.csv"), [Delimiter = ",", Columns = 6, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Changed column type" = Table.TransformColumnTypes(Source, {{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}}),
+		    #"Removed Top Rows" = Table.Skip(#"Changed column type",1),
+		    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"קוד נקודה", type text}, {"תאריך דיגום", type datetime}, {"מדד בקטריאלי", type text}, {"תוצאה        CFU/100 ml", type text}, {"שם נקודה", type text}, {"אתר", type text}}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"קוד נקודה", "Location Point"}, {"תאריך דיגום", "Sample Date"}, {"מדד בקטריאלי", "Bacterial index"}, {"שם נקודה", "Location Name"}, {"אתר", "Site"}, {"תוצאה        CFU/100 ml", "Result CFU/100 ml"}})
+		in
+		  #"Renamed Columns"
+	lineageTag: 0c46c11d-c92d-4ec1-8923-2d29cf333107
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression river_pollution_2026 =
+		let
+		  Source = Csv.Document(File.Contents("C:\Projects\analysis\river_pollution\data\csv\2026.csv"), [Delimiter = ",", Columns = 6, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Changed column type" = Table.TransformColumnTypes(Source, {{"Column1", type text}, {"Column2", type text}, {"Column3", type text}, {"Column4", type text}, {"Column5", type text}, {"Column6", type text}}),
+		    #"Removed Top Rows" = Table.Skip(#"Changed column type",1),
+		    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"קוד נקודה", type text}, {"תאריך דיגום", type datetime}, {"מדד בקטריאלי", type text}, {"תוצאה        CFU/100 ml", type text}, {"שם נקודה", type text}, {"אתר", type text}}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"קוד נקודה", "Location Point"}, {"תאריך דיגום", "Sample Date"}, {"מדד בקטריאלי", "Bacterial index"}, {"שם נקודה", "Location Name"}, {"אתר", "Site"}, {"תוצאה        CFU/100 ml", "Result CFU/100 ml"}})
+		in
+		  #"Renamed Columns"
+	lineageTag: 644ce6fa-2093-43cf-b25c-37db9b09241a
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression locations_with_coordinates =
+		let
+		  Source = Csv.Document(File.Contents("C:\Projects\analysis\river_pollution\data\locations_with_coordinates_gimini.csv"),[Delimiter=",", Columns=6, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+		  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+		  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"שם נקודה", type text}, {"אתר", type text}, {"Latitude", type number}, {"Longitude", type number}, {"Tries", Int64.Type}}),
+		    #"Trimmed Text" = Table.TransformColumns(#"Changed column type",{{"שם נקודה", Text.Trim, type text}, {"אתר", Text.Trim, type text}}),
+		    #"Replaced Value" = Table.ReplaceValue(#"Trimmed Text","","עין כיף",Replacer.ReplaceValue,{"אתר"}),
+		    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value","כזיב בריכת עין תמיר","כזיב בריכת עין טמיר",Replacer.ReplaceText,{"שם נקודה"}),
+		    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","כזיב עין תמיר","כזיב עין טמיר",Replacer.ReplaceText,{"שם נקודה"}),
+		    #"Removed Duplicates" = Table.Distinct(#"Replaced Value3")
+		in
+		    #"Removed Duplicates"
+	lineageTag: 436f9d3d-5bb3-4230-963f-421bdf0dced8
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

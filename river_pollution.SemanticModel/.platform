@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "river_pollution"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "cfd8387f-e5c7-409c-a27e-99baa5275732"
+  }
+}

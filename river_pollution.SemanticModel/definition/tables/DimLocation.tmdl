@@ -1,0 +1,110 @@
+table DimLocation
+	lineageTag: 9b353ce1-13f3-496d-bde5-80c471f83a88
+
+	column LocationID
+		dataType: int64
+		formatString: 0
+		lineageTag: b444c928-4119-47dc-9dd9-5e28aff898d4
+		summarizeBy: none
+		sourceColumn: LocationID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Location Point'
+		dataType: string
+		lineageTag: 3f43408b-41a5-4c9c-874b-a53ec37e6068
+		summarizeBy: none
+		sourceColumn: Location Point
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Location Name'
+		dataType: string
+		lineageTag: b1b9a34d-85e3-4216-9c1b-1c000df56767
+		summarizeBy: none
+		sourceColumn: Location Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Site
+		dataType: string
+		lineageTag: e07b27df-1fb9-4607-803e-b257511489aa
+		summarizeBy: none
+		sourceColumn: Site
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latitude
+		dataType: double
+		lineageTag: 94b6000d-4314-482c-81bd-4e31d3a426ee
+		dataCategory: Latitude
+		summarizeBy: none
+		sourceColumn: Latitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Longitude
+		dataType: double
+		lineageTag: 1b083305-a672-4cf7-8e1f-9ff3af0de10f
+		dataCategory: Longitude
+		summarizeBy: none
+		sourceColumn: Longitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Region
+		dataType: string
+		lineageTag: 8602b8aa-fef4-4df3-8b73-cdbe9d4039a8
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimLocation = m
+		mode: import
+		source = ```
+				let
+				    Source = Table.Combine({river_pollution_2019, #"river_pollution_2020-2021", river_pollution_2022, river_pollution_2023, river_pollution_2024, river_pollution_2025, river_pollution_2026}),
+				    #"Removed Blank Rows" = Table.SelectRows(Source, each not List.IsEmpty(List.RemoveMatchingItems(Record.FieldValues(_), {"", null}))),
+				    #"Replaced Value" = Table.ReplaceValue(#"Removed Blank Rows",">1000.",">1000",Replacer.ReplaceText,{"Result CFU/100 ml"}),
+				    #"Added Custom" = Table.AddColumn(#"Replaced Value", "Result_Qualifier", each if Text.StartsWith(Text.From([#"Result CFU/100 ml"]), "<") then "<"
+				else if Text.StartsWith(Text.From([#"Result CFU/100 ml"]), ">") then ">"
+				else if [#"Result CFU/100 ml"] = "פלטה מכוסה" then "TNTC"
+				else "="),
+				    #"Added Custom1" = Table.AddColumn(#"Added Custom", "Result_Numeric", each if [#"Result CFU/100 ml"] = "פלטה מכוסה" then null
+				else try Number.FromText(Text.Select(Text.From([#"Result CFU/100 ml"]), {"0".."9"})) otherwise null),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Added Custom1",{{"Result_Numeric", Int64.Type}, {"Result_Qualifier", type text}}),
+				    #"Replaced Value2" = Table.ReplaceValue(#"Changed Type","","עין כיף",Replacer.ReplaceValue,{"Site"}),
+				    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","ירדן ","ירדן",Replacer.ReplaceText,{"Site"}),
+				    #"Filtered Rows" = Table.SelectRows(#"Replaced Value3", each true),
+				    #"Trimmed Text" = Table.TransformColumns(#"Filtered Rows",{{"Location Name", Text.Trim, type text}}),
+				    #"Filtered Rows1" = Table.SelectRows(#"Trimmed Text", each true),
+				    #"Trimmed Text1" = Table.TransformColumns(#"Filtered Rows1",{{"Site", Text.Trim, type text}, {"Bacterial index", Text.Trim, type text}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Trimmed Text1",{{"Sample Date", type datetime}}),
+				    #"Replaced Value4" = Table.ReplaceValue(#"Changed Type1","כזיב בריכת עין תמיר","כזיב בריכת עין טמיר",Replacer.ReplaceText,{"Location Name"}),
+				    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","כזיב עין תמיר","כזיב עין טמיר",Replacer.ReplaceText,{"Location Name"}),
+				    #"Added Index" = Table.AddIndexColumn(#"Replaced Value5", "Index", 1, 1, Int64.Type),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Added Index",{"Index", "Location Point", "Sample Date", "Bacterial index", "Result CFU/100 ml", "Location Name", "Site", "Result_Qualifier", "Result_Numeric"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Reordered Columns",{{"Index", "ID"}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns",{"ID", "Sample Date", "Bacterial index", "Result CFU/100 ml", "Result_Qualifier", "Result_Numeric"}),
+				    #"Removed Duplicates" = Table.Distinct(#"Removed Columns"),
+				    #"Added Index1" = Table.AddIndexColumn(#"Removed Duplicates", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Added Index1",{{"Index", "LocationID"}}),
+				    #"Reordered Columns1" = Table.ReorderColumns(#"Renamed Columns1",{"LocationID", "Location Point", "Location Name", "Site"}),
+				    #"Replaced Value1" = Table.ReplaceValue(#"Reordered Columns1","ירדןטבריה","ירדן טבריה",Replacer.ReplaceText,{"Site"}),
+				    #"Merged Queries" = Table.NestedJoin(#"Replaced Value1", {"Location Name", "Site"}, locations_with_coordinates, {"שם נקודה", "אתר"}, "locations_with_coordinates", JoinKind.LeftOuter),
+				    #"Expanded locations_with_coordinates" = Table.ExpandTableColumn(#"Merged Queries", "locations_with_coordinates", {"Latitude", "Longitude", "אזור"}, {"locations_with_coordinates.Latitude", "locations_with_coordinates.Longitude", "locations_with_coordinates.אזור"}),
+				    #"Renamed Columns2" = Table.RenameColumns(#"Expanded locations_with_coordinates",{{"locations_with_coordinates.Latitude", "Latitude"}, {"locations_with_coordinates.Longitude", "Longitude"}, {"locations_with_coordinates.אזור", "Region"}})
+				    
+				in
+				    #"Renamed Columns2"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

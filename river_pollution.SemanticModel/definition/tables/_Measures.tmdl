@@ -1,0 +1,611 @@
+table _Measures
+	isHidden
+	lineageTag: 1364abca-3d45-433d-80bf-55d51246aeaa
+
+	measure 'Sample Count' = COUNTROWS(FactRiverPollution)
+		formatString: 0
+		lineageTag: 9ece1c1f-b150-419f-8c85-60ea72cfb89e
+
+	measure 'Average CFU' = AVERAGE(FactRiverPollution[Result_Numeric])
+		lineageTag: 2eb70c72-61b7-4a3f-a4a7-2cae4325c96f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Median CFU' = MEDIAN(FactRiverPollution[Result_Numeric])
+		lineageTag: 88dbd578-4e92-4d71-a616-60b1de202815
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Max CFU' = MAX(FactRiverPollution[Result_Numeric])
+		formatString: 0
+		lineageTag: dfc18c56-6791-4923-89cf-1a6f590b78fb
+
+	measure 'Min CFU' = MIN(FactRiverPollution[Result_Numeric])
+		formatString: 0
+		lineageTag: 53015667-0a66-4c01-9551-f91a731e0338
+
+	measure 'TNTC Count' = CALCULATE([Sample Count], FactRiverPollution[Result_Qualifier] = "TNTC")
+		formatString: 0
+		lineageTag: 50c7c690-03f7-4472-8479-ad8a5bb077e9
+
+	measure 'TNTC %' = DIVIDE([TNTC Count], [Sample Count])
+		formatString: 0.0%
+		lineageTag: 06b1e551-f28b-4402-be58-14cdaa86355a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Below Detection Count' = CALCULATE([Sample Count], FactRiverPollution[Result_Qualifier] = "<")
+		formatString: 0
+		lineageTag: c788b981-e733-4d09-9799-5e9810035b9e
+
+	measure 'Below Detection %' = DIVIDE([Below Detection Count], [Sample Count])
+		formatString: 0.0%
+		lineageTag: f63a3a93-edcb-4d3c-990f-08b11b69cfc4
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Above Range Count' = CALCULATE([Sample Count], FactRiverPollution[Result_Qualifier] = ">")
+		formatString: 0
+		lineageTag: 67c11682-3d20-4202-8bbc-685eac195168
+
+	/// Denominator's bacteria set matches [Exceedance Count] below — kept as a literal IN list
+	/// here too (rather than only in one place) since DAX measures can't share a local variable.
+	/// Numerator is coalesced to 0 before DIVIDE: [Exceedance Count]'s own CALCULATE(FILTER(...))
+	/// legitimately returns BLANK (not 0) whenever nothing in context can match its "> 400 or
+	/// TNTC" condition — e.g. a genuinely clean site/year, or the Exceedance Bucket slicer itself
+	/// narrowed to "Below 400" (same quirk already called out in [Positive:Negative Ratio Color]'s
+	/// comment). Left uncoalesced, that BLANK propagates through DIVIDE (blank numerator -> blank
+	/// result even with a valid nonzero denominator) and makes a 0%-exceedance site indistinguishable
+	/// from [Cleanliness Score]'s "untested, no fecal-indicator samples in context" BLANK case —
+	/// which is what made a location with 9/9 clean samples show up as a blank gauge instead of 100%.
+	/// The denominator itself is deliberately left un-coalesced: TestedCount = 0/BLANK still needs
+	/// to make this whole measure BLANK, since that's the real "untested" signal everything
+	/// downstream ([Cleanliness Score], [Cleanest Rank], [Most Polluted Rank]) keys off.
+	measure 'Exceedance %' =
+			VAR TestedCount =
+			    CALCULATE(
+			        CALCULATE([Sample Count], KEEPFILTERS(DimBacterialIndex[Bacterial index] IN {"קוליפורם צואתי", "E.coli MUG", "סטרפטוקוק/אנטרוקוק ממוצא צואתי"})),
+			        REMOVEFILTERS(FactRiverPollution[Exceedance Bucket])
+			    )
+			VAR ExceedanceCountSafe =
+			    IF(ISBLANK([Exceedance Count]), 0, [Exceedance Count])
+			RETURN
+			    DIVIDE(ExceedanceCountSafe, TestedCount)
+		formatString: 0.0%
+		lineageTag: b28986cd-8de0-46f8-90f2-55058649afbc
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// A TNTC reading ("plate covered" — literally too many colonies to count) has
+	/// Result_Numeric = BLANK, so a plain `Result_Numeric > 400` condition silently
+	/// evaluates to false for it — treating the worst possible result as if it never
+	/// exceeded the threshold. TNTC counts as an exceedance too.
+	/// Bacteria set was originally just קוליפורם צואתי / E.coli MUG (the two fecal-coliform
+	/// indicators); סטרפטוקוק/אנטרוקוק ממוצא צואתי was added once [Enterococcus EU Standard
+	/// (Good)] established 400 as its threshold too (EU Bathing Water Directive, no Israeli
+	/// standard found — see that measure's comment) — otherwise this measure and everything
+	/// downstream of it ([Exceedance %], [Positive Sample Count], the map page's exceedance
+	/// cards) silently returns BLANK whenever a page/slicer is filtered to just that bacteria,
+	/// since KEEPFILTERS against the old two-item set intersects to nothing.
+	/// Wrapped in an outer CALCULATE that REMOVEFILTERS the Exceedance Bucket column itself —
+	/// without it, selecting "Below 400" in the control panel's Exceedance Bucket slicer
+	/// pre-excludes every row this measure is trying to find, making it structurally impossible
+	/// to ever count an exceedance while that slicer is pinned to one side (and the mirror image
+	/// for "Above 400" vs [Positive Sample Count]/[Cleanliness Score]) — that's what made a
+	/// heavily polluted site (multiple 10,000+ readings and TNTC) read as "100% תקינות" once its
+	/// one compliant sample got isolated by an Exceedance Bucket = Below 400 filter. Must be a
+	/// *nested* CALCULATE, not a sibling filter argument on the same CALCULATE as the FILTER()
+	/// below — DAX evaluates all of one CALCULATE's filter arguments against the pre-CALCULATE
+	/// context simultaneously, so REMOVEFILTERS needs its own outer CALCULATE for the inner
+	/// FILTER(FactRiverPollution, ...) to actually see the bucket filter already lifted.
+	measure 'Exceedance Count' =
+			CALCULATE(
+			    CALCULATE(
+			        [Sample Count],
+			        FILTER(
+			            FactRiverPollution,
+			            FactRiverPollution[Result_Numeric] > 400 || FactRiverPollution[Result_Qualifier] = "TNTC"
+			        ),
+			        KEEPFILTERS( DimBacterialIndex[Bacterial index] IN {"קוליפורם צואתי", "E.coli MUG", "סטרפטוקוק/אנטרוקוק ממוצא צואתי"})
+			    ),
+			    REMOVEFILTERS(FactRiverPollution[Exceedance Bucket])
+			)
+		formatString: 0
+		lineageTag: 63cf2101-5b37-4ef9-8970-3f871811c7ff
+
+	measure 'TNTC Ceiling' =
+			VAR MaxReal =
+			    CALCULATE(
+			        MAX(FactRiverPollution[Result_Numeric]),
+			        ALLSELECTED(DimDate),
+			        ALLSELECTED(DimBacterialIndex)
+			    )
+			RETURN
+			    IF(ISBLANK(MaxReal), 6000, MaxReal * 1.15)
+		formatString: 0
+		lineageTag: 15943805-71e8-47f9-adda-4cdd204a2053
+
+	measure 'CFU Plot Value' =
+			VAR RowsInContext = COUNTROWS(FactRiverPollution)
+			VAR NumericMax = MAX(FactRiverPollution[Result_Numeric])
+			RETURN
+			    IF(
+			        RowsInContext = 0,
+			        BLANK(),
+			        IF(ISBLANK(NumericMax), [TNTC Ceiling], NumericMax)
+			    )
+		formatString: 0
+		lineageTag: 2c122632-75b7-4320-80a3-c4ebfc16e750
+
+	measure 'Is TNTC Cell' =
+			VAR RowsInContext = COUNTROWS(FactRiverPollution)
+			VAR NumericMax = MAX(FactRiverPollution[Result_Numeric])
+			RETURN
+			    IF(RowsInContext > 0 && ISBLANK(NumericMax), 1, 0)
+		formatString: 0
+		lineageTag: b287dec8-ad19-4d8c-901b-0fbb1cc5a207
+
+	measure 'CFU Bar Color' =
+			VAR IsTntc = [Is TNTC Cell]
+			VAR Bact = SELECTEDVALUE(DimBacterialIndex[Bacterial index])
+			RETURN
+			    IF(
+			        IsTntc = 1,
+			        "#898781",
+			        SWITCH(
+			            TRUE(),
+			            Bact = "קוליפורם צואתי", "#233a48",
+			            Bact = "E.coli MUG", "#436e67",
+			            Bact = "סטרפטוקוק/אנטרוקוק ממוצא צואתי", "#6c9585",
+			            "#52514e"
+			        )
+			    )
+		lineageTag: e83e001f-a206-4a5a-a9a2-6915f978e421
+
+	measure 'TNTC Flag' = IF([Is TNTC Cell] = 1, "TNTC — off-scale (shown above this chart's real max)", "Measured")
+		lineageTag: 54cc7401-f9cb-4062-bef0-96a96c0ca21d
+
+	measure 'Max value NON TNTC' = CALCULATE(MAX(FactRiverPollution[Result_Numeric]) , REMOVEFILTERS(FactRiverPollution)) * 1.15
+		formatString: 0
+		lineageTag: e04e48f9-bc94-43d6-a277-4d6368360bcc
+
+	measure 'Min Allowed value' = 400
+		formatString: 0
+		lineageTag: 190fc3c7-27d4-4c9f-8641-6c494d69231b
+
+	/// Same "worst reading, TNTC filled with the ceiling" logic as [CFU Plot Value], just at
+	/// map (per-location) grain instead of the bar chart's date/bacteria grain.
+	measure 'Map Bubble Size' = LOG10([Map Bubble Value] + 1)
+		formatString: 0.00
+		lineageTag: 5f2e3b9b-21f3-4b77-99c7-ade78b8153fb
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Map Bubble Value' =
+			VAR RowsInContext = COUNTROWS(FactRiverPollution)
+			VAR NumericMax = MAX(FactRiverPollution[Result_Numeric])
+			RETURN
+			    IF(
+			        RowsInContext = 0,
+			        BLANK(),
+			        IF(ISBLANK(NumericMax), [TNTC Ceiling], NumericMax)
+			    )
+		formatString: 0
+		lineageTag: b9f4ffd4-38a9-4019-9982-72ca4bfbd1c3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Log-compressed so one extreme site (e.g. a Hadera spike) doesn't shrink every other
+	/// bubble to a dot next to it — Result_Numeric spans single digits to 100,000+, same
+	/// reason the bar chart's Y axis uses a log scale instead of linear.
+	measure 'Map Bubble Color' =
+			VAR IsTntc = [Is TNTC Cell]
+			VAR TntcColor = "#898781"
+			VAR HexDigits = "0123456789ABCDEF"
+			VAR MaxDomain = LOG10([Max value NON TNTC] + 1)
+			VAR RawRatio = DIVIDE(LOG10([Map Bubble Value] + 1), MaxDomain)
+			VAR Ratio = MIN(1, MAX(0, RawRatio))
+			VAR R0 = 26		VAR G0 = 152	VAR B0 = 80		/* #1a9850 safe / low */
+			VAR R1 = 254	VAR G1 = 224	VAR B1 = 139	/* #fee08b moderate */
+			VAR R2 = 244	VAR G2 = 109	VAR B2 = 67		/* #f46d43 high */
+			VAR R3 = 165	VAR G3 = 0		VAR B3 = 38		/* #a50026 severe */
+			VAR Seg = MIN(2, INT(Ratio * 3))
+			VAR LocalT = (Ratio * 3) - Seg
+			VAR RStart = SWITCH(Seg, 0, R0, 1, R1, R2)
+			VAR RStop = SWITCH(Seg, 0, R1, 1, R2, R3)
+			VAR GStart = SWITCH(Seg, 0, G0, 1, G1, G2)
+			VAR GStop = SWITCH(Seg, 0, G1, 1, G2, G3)
+			VAR BStart = SWITCH(Seg, 0, B0, 1, B1, B2)
+			VAR BStop = SWITCH(Seg, 0, B1, 1, B2, B3)
+			VAR Rv = ROUND(RStart + (RStop - RStart) * LocalT, 0)
+			VAR Gv = ROUND(GStart + (GStop - GStart) * LocalT, 0)
+			VAR Bv = ROUND(BStart + (BStop - BStart) * LocalT, 0)
+			VAR RHex = MID(HexDigits, INT(Rv / 16) + 1, 1) & MID(HexDigits, MOD(Rv, 16) + 1, 1)
+			VAR GHex = MID(HexDigits, INT(Gv / 16) + 1, 1) & MID(HexDigits, MOD(Gv, 16) + 1, 1)
+			VAR BHex = MID(HexDigits, INT(Bv / 16) + 1, 1) & MID(HexDigits, MOD(Bv, 16) + 1, 1)
+			RETURN
+			    IF(IsTntc, TntcColor, "#" & RHex & GHex & BHex)
+		lineageTag: 64edb8a7-45c3-49f3-a532-c3469e2ed21b
+
+	/// Lowest/highest real (non-TNTC) reading for whatever Site/Location/Year is currently
+	/// filtered by the page's slicers — same ALLSELECTED(DimDate)/ALLSELECTED(DimBacterialIndex)
+	/// pattern as [TNTC Ceiling], so a single data point's tooltip can show where that month's
+	/// reading falls against the full range seen at this site, not just within its own
+	/// month/bacteria cell (which would trivially equal the point itself).
+	measure 'Site Min CFU' =
+			CALCULATE(
+			    MIN(FactRiverPollution[Result_Numeric]),
+			    ALLSELECTED(DimDate),
+			    ALLSELECTED(DimBacterialIndex)
+			)
+		formatString: 0
+		lineageTag: a3d5e8f2-4c1b-4a9e-8f6d-2b9c7e0a51d4
+
+	measure 'Site Max CFU' =
+			CALCULATE(
+			    MAX(FactRiverPollution[Result_Numeric]),
+			    ALLSELECTED(DimDate),
+			    ALLSELECTED(DimBacterialIndex)
+			)
+		formatString: 0
+		lineageTag: c7f19a3d-6e2b-48a5-9d3f-1a8c6b4e07f2
+
+	/// SELECTEDVALUE falls back to a plain label when the current selection (chart context +
+	/// page slicers) covers more than one location/site, instead of a blank tooltip cell.
+	measure 'Location Name (Tooltip)' = SELECTEDVALUE(DimLocation[Location Name], "Multiple locations")
+		lineageTag: 8b4d2f6a-9c1e-4a7b-b3d8-5f0e2a9c6d17
+
+	measure 'Site (Tooltip)' = SELECTEDVALUE(DimLocation[Site], "Multiple sites")
+		lineageTag: e2a9c6d1-7f3b-4e8a-9d2c-6b1f4a8e30c5
+
+	measure 'Above Range %' = DIVIDE([Above Range Count], [Sample Count])
+		formatString: 0.0%
+		lineageTag: a4d9e2f1-6c3b-4e8a-9f1d-2b7c5a0e93d6
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Rank of each Site by [Exceedance %] ascending (1 = cleanest) among sites, within
+	/// whatever other filter context is active — ALL() only lifts the Site filter itself,
+	/// so if Year is also in the visual this ranks sites separately per year; if Year is
+	/// absent (e.g. a Site-only chart) it ranks across all years combined. Ties (most often
+	/// several sites all sitting at 0% exceedance) are broken toward whichever site has more
+	/// samples backing that reading — DIVIDE([Sample Count], 1000000) is a nudge far smaller
+	/// than any real gap between two distinct Exceedance % values, so it only ever resolves
+	/// ties, never reorders genuinely different percentages.
+	/// A site with no fecal-indicator (קוליפורם צואתי / E.coli MUG / סטרפטוקוק/אנטרוקוק ממוצא
+	/// צואתי) samples in the current context has [Exceedance %] = BLANK, which arithmetic treats as 0 — i.e. "never
+	/// exceeded", indistinguishable from a genuinely clean reading. Both the candidate pool
+	/// and the current row are guarded so an untested site/year is excluded from the ranking
+	/// entirely rather than defaulting to "cleanest".
+	measure 'Cleanest Rank' =
+			IF(
+			    ISBLANK([Exceedance %]),
+			    BLANK(),
+			    RANKX(
+			        FILTER(ALL(DimLocation[Site]), NOT ISBLANK([Exceedance %])),
+			        [Exceedance %] - DIVIDE([Sample Count], 1000000),
+			        ,
+			        ASC,
+			        Dense
+			    )
+			)
+		formatString: 0
+		lineageTag: f6c33569-c1fc-41c8-9ccc-15d38c6cbd58
+
+	/// Inverted [Exceedance %] (1 - Exceedance %) so "bigger = cleaner" — used as the
+	/// ribbon chart's plotted value so the cleanest site's ribbon stacks on top (ribbon/
+	/// stacked charts order segments by value descending), instead of the dirtiest site
+	/// landing on top the way a raw ascending Exceedance % value would.
+	/// Must return BLANK (not 1 - BLANK = 1) when a site has no fecal-indicator samples in
+	/// context — otherwise it's the only value bound to this chart's Y role, so a "1 = 100%
+	/// clean" result keeps that ghost site/year combination from being blank-suppressed and
+	/// it renders as a real ribbon segment even though there was nothing to measure.
+	measure 'Cleanliness Score' = IF(ISBLANK([Exceedance %]), BLANK(), 1 - [Exceedance %])
+		formatString: 0.0%
+		lineageTag: 8a1f6e2c-4d9b-4f3a-9c7e-2b5d0a6f31e4
+
+	/// Mirror of [Cleanest Rank] for the opposite end: rank of each Site by [Exceedance %]
+	/// descending (1 = most polluted) among sites that actually have fecal-indicator samples
+	/// in context — same BLANK guard (an untested site/year is excluded, not treated as 0%
+	/// exceedance), same tie-break (DIVIDE([Sample Count], 1000000) added, not subtracted,
+	/// so among sites tied at the same Exceedance %, the one with more samples backing that
+	/// reading is the more confidently "most polluted" one and sorts first).
+	measure 'Most Polluted Rank' =
+			IF(
+			    ISBLANK([Exceedance %]),
+			    BLANK(),
+			    RANKX(
+			        FILTER(ALL(DimLocation[Site]), NOT ISBLANK([Exceedance %])),
+			        [Exceedance %] + DIVIDE([Sample Count], 1000000),
+			        ,
+			        DESC,
+			        Dense
+			    )
+			)
+		formatString: 0
+		lineageTag: 9078b577-06ae-4959-be2b-83ed91731b7e
+
+	measure 'Private Data - Name' = "Taiar Erez"
+		lineageTag: ed4a4950-7b0f-4756-b288-c857fb2b3cbe
+
+	measure 'Private Data LinkedIn' = "https://www.linkedin.com/in/erez-taiar/"
+		lineageTag: b95a3db6-b4ac-4da5-a841-4e333ea6c05d
+
+	/// Backs the "Bacterial Counts by Month" chart's report-page tooltip (donut + bar
+	/// breakdown of all three bacteria for the hovered month). Hovering a data point on
+	/// that chart passes both the month (DateID) and the hovered bacteria (BacterialID)
+	/// as filters to the tooltip page — if the tooltip's donut/bar grouped directly by
+	/// DimBacterialIndex[Bacterial index], that inherited single-bacteria filter would
+	/// collapse them to one slice/bar instead of showing all three. DimBacterialIndexTooltip
+	/// is a disconnected duplicate of that column (see its own table comment), so its
+	/// grouping is untouched by the inherited filter; TREATAS below re-applies each
+	/// slice's own bacteria as a filter on the real DimBacterialIndex, while the month
+	/// (and any Site slicer selection) still flow through normally via the untouched
+	/// fact-table relationships.
+	measure 'Tooltip CFU Value' =
+			CALCULATE(
+			    [CFU Plot Value],
+			    TREATAS(VALUES(DimBacterialIndexTooltip[Bacterial index (Tooltip)]), DimBacterialIndex[Bacterial index])
+			)
+		formatString: 0
+		lineageTag: 2aca5874-0f4e-4b2c-9b86-69fe1fc1e7fa
+
+	/// Same TREATAS re-filter as [Tooltip CFU Value], wrapping [Is TNTC Cell] so
+	/// [Tooltip Bar Color] can gray out a slice/bar whose month had no numeric reading
+	/// for that specific bacteria (TNTC) — same convention as [CFU Bar Color].
+	measure 'Tooltip Is TNTC Cell' =
+			CALCULATE(
+			    [Is TNTC Cell],
+			    TREATAS(VALUES(DimBacterialIndexTooltip[Bacterial index (Tooltip)]), DimBacterialIndex[Bacterial index])
+			)
+		formatString: 0
+		lineageTag: 22fa4df9-4937-460b-b291-737a5ca81982
+
+	/// [CFU Bar Color] keyed off DimBacterialIndexTooltip instead of DimBacterialIndex —
+	/// the main chart's version would return the same (single, hover-filtered) color for
+	/// every slice/bar on the tooltip page, since DimBacterialIndex[Bacterial index] itself
+	/// stays pinned to the hovered value there. Same fixed hex-per-bacteria mapping as
+	/// [CFU Bar Color] so the tooltip's colors match the main chart's legend exactly.
+	measure 'Tooltip Bar Color' =
+			VAR IsTntc = [Tooltip Is TNTC Cell]
+			VAR Bact = SELECTEDVALUE(DimBacterialIndexTooltip[Bacterial index (Tooltip)])
+			RETURN
+			    IF(
+			        IsTntc = 1,
+			        "#898781",
+			        SWITCH(
+			            TRUE(),
+			            Bact = "קוליפורם צואתי", "#233a48",
+			            Bact = "E.coli MUG", "#436e67",
+			            Bact = "סטרפטוקוק/אנטרוקוק ממוצא צואתי", "#6c9585",
+			            "#52514e"
+			        )
+			    )
+		lineageTag: c643f16f-54bd-4fb6-8d89-0af5101585c0
+
+	/// No Israeli national standard could be located for סטרפטוקוק/אנטרוקוק ממקור צואתי
+	/// (fecal streptococcus/enterococcus) — researched 2026-09-09: the MoH sampling-methodology
+	/// PDF cites a 1993 circular ("קריטריונים לאיכות מים לנופש ללא מגע גוף") that isn't published
+	/// anywhere online, and the two real Israeli river-monitoring programs found (Nahal Lachish,
+	/// Nahal Yarkon) use conflicting local numbers that don't trace back to it either. Using the
+	/// EU Bathing Water Directive 2006/7/EC, Annex I, inland-waters "Good" threshold instead —
+	/// see the homepage textbox for the full explanation. This value is coincidentally identical
+	/// to [Min Allowed value]/the chart's existing 400 exceedance line for E.coli/coliform, so the
+	/// combo chart deliberately reuses that one line/label for both rather than drawing a second,
+	/// perfectly overlapping line.
+	measure 'Enterococcus EU Standard (Good)' = 400
+		formatString: 0
+		lineageTag: 2f6a9c81-3e5d-4b7a-8c1f-9a6d3e5b70c8
+
+	/// "Positive"/"Negative" here follow the user's own naming (not standard bio usage,
+	/// where "positive" would mean detected) — Negative = exceeds the 400 CFU threshold
+	/// (same [Exceedance Count] definition, TNTC included as worst-case), Positive = the
+	/// rest of the same threshold-relevant population (same three-bacteria KEEPFILTERS
+	/// scoping as [Exceedance Count]/[Exceedance %] — see [Exceedance Count]'s comment for
+	/// why סטרפטוקוק/אנטרוקוק ממוצא צואתי is included alongside קוליפורם צואתי / E.coli MUG).
+	/// Same REMOVEFILTERS(Exceedance Bucket) treatment as [Exceedance Count] on the first term,
+	/// so this stays the true "tested and compliant" count for the Year/Bacteria/Location
+	/// selection even while the Exceedance Bucket slicer itself is pinned to one side — without
+	/// it, selecting "Above 400" would zero out this term directly (mirroring how "Below 400"
+	/// used to blank out [Exceedance Count]), making a genuinely dirty site look artificially
+	/// clean-or-dirty depending purely on which bucket happened to be selected.
+	measure 'Positive Sample Count' =
+			CALCULATE(
+			    CALCULATE(
+			        [Sample Count],
+			        KEEPFILTERS(DimBacterialIndex[Bacterial index] IN {"קוליפורם צואתי", "E.coli MUG", "סטרפטוקוק/אנטרוקוק ממוצא צואתי"})
+			    ),
+			    REMOVEFILTERS(FactRiverPollution[Exceedance Bucket])
+			) - [Exceedance Count]
+		formatString: 0
+		lineageTag: d1e6f8a2-9b4c-4a7d-8e1f-3c6b0a9d52e7
+
+	measure 'Positive:Negative Ratio' = DIVIDE([Positive Sample Count], [Exceedance Count])
+		formatString: 0.00
+		lineageTag: f4a7c2e9-5d8b-4f1a-9c3e-7b0d6a2f84c1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Traffic-light color for the ratio card: green when the ratio favors positive (>=1,
+	/// or blank because there were zero exceedances to divide by — still a "good" state),
+	/// red when negative samples outnumber positive ones. Reuses the same green/red already
+	/// established elsewhere in the model (Map Bubble Color's safe end, the exceedance
+	/// reference line) rather than introducing new hex values.
+	measure 'Positive:Negative Ratio Color' =
+			VAR Ratio = [Positive:Negative Ratio]
+			RETURN
+			    IF(ISBLANK(Ratio) || Ratio >= 1, "#1a9850", "#d03b3b")
+		lineageTag: a8c3e6f1-2d9b-4a7c-8e5f-1b6d9a4c07e3
+
+	measure 'Bacterial index (Tooltip)' = SELECTEDVALUE(DimBacterialIndex[Bacterial index], "Multiple bacteria")
+		lineageTag: 2daa8a55-cd14-4844-90bb-8ac767639d8a
+
+	/// Backs the location-comparison chart's report-page tooltip: compares that single
+	/// data point's [CFU Plot Value] (one location, one bacteria, one year) against the
+	/// same 400 CFU recommended threshold as [Min Allowed value] / the exceedance
+	/// reference line. TNTC is treated as automatically above, since it has no numeric
+	/// reading but is known to be at or beyond the plate's counting limit.
+	measure 'CFU Vs Recommended Status' =
+			VAR V = [CFU Plot Value]
+			RETURN
+			    IF(
+			        ISBLANK(V), BLANK(),
+			        IF(
+			            [Is TNTC Cell] = 1, "TNTC (מעל הסולם, נחשב חריגה)",
+			            IF(V > [Min Allowed value], "מעל הערך המומלץ (400)", "בטווח התקין (עד 400)")
+			        )
+			    )
+		lineageTag: bee398e6-c541-4131-92d6-076f198d1d5a
+
+	/// Same green/red convention as [Positive:Negative Ratio Color] and the chart's own
+	/// exceedance reference line - reuses those exact hex values rather than introducing
+	/// new ones.
+	measure 'CFU Vs Recommended Color' =
+			IF(
+			    [Is TNTC Cell] = 1, "#d03b3b",
+			    IF([CFU Plot Value] > [Min Allowed value], "#d03b3b", "#1a9850")
+			)
+		lineageTag: 2d378c36-967a-4d2d-9a3f-97de385f816c
+
+	/// Backs the control-panel page's "current selection" summary cards. "הכל" (All) is
+	/// shown both when nothing is filtered (SelectedCount = 0, i.e. VALUES returns every
+	/// row unfiltered) and when every distinct year happens to be individually selected
+	/// (SelectedCount = TotalCount) — both mean "no effective restriction", so there's no
+	/// need to distinguish them for display. Past 6 selected years, switches to a plain
+	/// count instead of spelling all of them out.
+	measure 'Selected Years Text' =
+			VAR SelectedYears = VALUES(DimDate[Year])
+			VAR SelectedCount = COUNTROWS(SelectedYears)
+			VAR TotalCount = COUNTROWS(ALL(DimDate[Year]))
+			RETURN
+			    IF(
+			        SelectedCount = 0 || SelectedCount = TotalCount,
+			        "הכל",
+			        IF(
+			            SelectedCount > 6,
+			            SelectedCount & " שנים נבחרו",
+			            CONCATENATEX(SelectedYears, DimDate[Year], ", ", DimDate[Year], ASC)
+			        )
+			    )
+		lineageTag: b39d45ff-619e-46e5-8b98-f79b4e114ae4
+
+	/// Same "הכל" fallback as [Selected Years Text]; no truncation needed since there are
+	/// only 3 bacteria types total.
+	measure 'Selected Bacteria Text' =
+			VAR SelectedBact = VALUES(DimBacterialIndex[Bacterial index])
+			VAR SelectedCount = COUNTROWS(SelectedBact)
+			VAR TotalCount = COUNTROWS(ALL(DimBacterialIndex[Bacterial index]))
+			RETURN
+			    IF(
+			        SelectedCount = 0 || SelectedCount = TotalCount,
+			        "הכל",
+			        CONCATENATEX(SelectedBact, DimBacterialIndex[Bacterial index], ", ")
+			    )
+		lineageTag: 6ac9b3d2-176c-46d2-9d3b-999b5ee08e78
+
+	/// FactRiverPollution[Exceedance Bucket] is BLANK for non-fecal-indicator bacteria rows
+	/// (see that column's definition) — excluded from both the selected and total counts so
+	/// an unfiltered/mixed selection still correctly reads as "הכל" rather than never
+	/// matching. Translates the column's own English literals ("Above 400"/"Below 400") to
+	/// Hebrew for display, since every other label in this report is Hebrew.
+	measure 'Selected Exceedance Bucket Text' =
+			VAR SelectedVals =
+			    FILTER(VALUES(FactRiverPollution[Exceedance Bucket]), NOT ISBLANK(FactRiverPollution[Exceedance Bucket]))
+			VAR SelectedCount = COUNTROWS(SelectedVals)
+			VAR TotalVals =
+			    FILTER(ALL(FactRiverPollution[Exceedance Bucket]), NOT ISBLANK(FactRiverPollution[Exceedance Bucket]))
+			VAR TotalCount = COUNTROWS(TotalVals)
+			RETURN
+			    IF(
+			        SelectedCount = 0 || SelectedCount = TotalCount,
+			        "הכל",
+			        CONCATENATEX(
+			            SelectedVals,
+			            SWITCH(
+			                FactRiverPollution[Exceedance Bucket],
+			                "Above 400", "מעל 400",
+			                "Below 400", "מתחת ל-400",
+			                FactRiverPollution[Exceedance Bucket]
+			            ),
+			            ", "
+			        )
+			    )
+		lineageTag: 8271ccd5-0659-46bc-816f-de5d3670a0f2
+
+	/// Same "הכל"/truncation pattern as [Selected Years Text], reported at Location Name
+	/// grain (the tree slicer's finest level) since that's the most specific thing a
+	/// selection can pin down.
+	measure 'Selected Location Text' =
+			VAR SelectedLoc = VALUES(DimLocation[Location Name])
+			VAR SelectedCount = COUNTROWS(SelectedLoc)
+			VAR TotalCount = COUNTROWS(ALL(DimLocation[Location Name]))
+			RETURN
+			    IF(
+			        SelectedCount = 0 || SelectedCount = TotalCount,
+			        "הכל",
+			        IF(
+			            SelectedCount > 32,
+			            SelectedCount & " מיקומים נבחרו",
+			            CONCATENATEX(SelectedLoc, DimLocation[Location Name], ", ")
+			        )
+			    )
+		lineageTag: 6a48f576-0848-4b13-8a71-e742b47cb5d1
+
+	/// Same green/red convention as [Positive:Negative Ratio Color], just keyed off
+	/// [Cleanliness Score] (already 1 - [Exceedance %], i.e. the compliant fraction) instead
+	/// of the ratio — backs the control panel's "% תקינות" card. >=50% compliant (or blank,
+	/// no fecal-indicator samples in context at all) reads as green, below 50% as red.
+	measure 'Cleanliness Score Color' =
+			VAR Score = [Cleanliness Score]
+			RETURN
+			    IF(ISBLANK(Score) || Score >= 0.5, "#1a9850", "#d03b3b")
+		lineageTag: 339686f4-7faf-4c76-a328-13410c20606d
+
+	/// Fixed 0/100%/100% bounds for the control panel's compliance gauge — same "constant
+	/// measure used as a fixed reference value" pattern as [Min Allowed value] /
+	/// [Enterococcus EU Standard (Good)], since the gauge visual's Min/Max/Target query
+	/// wells need a measure to bind to, not a literal typed into the format pane.
+	measure 'Gauge Min (0)' = 0
+		formatString: 0%
+		lineageTag: ac47fcf3-4f3f-46b5-861a-a1107bbaaaab
+
+	measure 'Gauge Max (100%)' = 1
+		formatString: 0%
+		lineageTag: 0d8e8d87-9f86-4cd5-b1fe-bfb3d3caf482
+
+	/// Working target for the compliance gauge — originally 100% (every sample compliant),
+	/// changed to 85% because a target sitting exactly at the axis ceiling was visually
+	/// indistinguishable from the end of the arc. Not a regulatory or research-backed figure
+	/// like [Min Allowed value]'s 400 CFU — just an internal goalpost placed where it's
+	/// visible. Kept as its own measure (rather than reusing [Gauge Max (100%)] directly in
+	/// the visual) so the target can move independently of the axis ceiling without touching
+	/// the gauge's query bindings.
+	measure 'Gauge Target (85%)' = .85
+		formatString: 0%
+		lineageTag: 298c17d3-dc13-4dcf-9cfb-c277ab016713
+
+	column Column1
+		dataType: string
+		isHidden
+		lineageTag: c1cfe85f-e40c-425f-98e6-a47924b191a3
+		summarizeBy: none
+		sourceColumn: Column1
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t])
+				in
+				    Source
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

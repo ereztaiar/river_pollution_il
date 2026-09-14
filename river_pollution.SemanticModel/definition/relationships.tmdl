@@ -1,0 +1,12 @@
+relationship AutoDetected_4fcf3ae9-e355-4983-8d9f-0ea2619f57ea
+	fromColumn: FactRiverPollution.LocationID
+	toColumn: DimLocation.LocationID
+
+relationship AutoDetected_41befc3d-94a1-4ca1-84e2-cf7e19159757
+	fromColumn: FactRiverPollution.DateID
+	toColumn: DimDate.DateID
+
+relationship AutoDetected_6057de69-554a-4982-b695-cdf680e9af36
+	fromColumn: FactRiverPollution.BacterialID
+	toColumn: DimBacterialIndex.BacterialID
+

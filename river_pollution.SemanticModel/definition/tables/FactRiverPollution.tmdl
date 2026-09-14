@@ -1,0 +1,137 @@
+table FactRiverPollution
+	lineageTag: 3edd903e-8cea-4efa-9ea2-85f88dc38f2a
+
+	column ID
+		dataType: int64
+		formatString: 0
+		lineageTag: 9c3facca-413c-4a64-8487-d4dcf527d611
+		summarizeBy: none
+		sourceColumn: ID
+
+		annotation SummarizationSetBy = User
+
+	column LocationID
+		dataType: int64
+		formatString: 0
+		lineageTag: b3bbcf93-244d-40a3-bd63-14839aacaed1
+		summarizeBy: none
+		sourceColumn: LocationID
+
+		annotation SummarizationSetBy = Automatic
+
+	column DateID
+		dataType: int64
+		formatString: 0
+		lineageTag: 89a5b1ae-5fbe-4ff9-abdd-378964af0b7e
+		summarizeBy: none
+		sourceColumn: DateID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Result CFU/100 ml'
+		dataType: string
+		lineageTag: d3749f87-bc7c-46c3-8040-64f5053212f0
+		summarizeBy: none
+		sourceColumn: Result CFU/100 ml
+
+		annotation SummarizationSetBy = Automatic
+
+	column Result_Qualifier
+		dataType: string
+		lineageTag: 84dd1b98-f07c-4a62-b39f-a6c8083c4ced
+		summarizeBy: none
+		sourceColumn: Result_Qualifier
+
+		annotation SummarizationSetBy = Automatic
+
+	column Result_Numeric
+		dataType: int64
+		formatString: #,0
+		lineageTag: f9f630f1-2f74-4ded-aaae-5c6dfce309d3
+		summarizeBy: none
+		sourceColumn: Result_Numeric
+
+		annotation SummarizationSetBy = User
+
+	column BacterialID
+		dataType: int64
+		formatString: 0
+		lineageTag: 2ffe2ec8-394e-43b5-a029-9f61c1091c3e
+		summarizeBy: none
+		sourceColumn: BacterialID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Same 400 CFU/100ml threshold and TNTC-counts-as-exceeded rule as [Exceedance Count]/
+	/// [Exceedance %], scoped to the same three fecal-indicator bacteria (סטרפטוקוק/אנטרוקוק
+	/// ממוצא צואתי added alongside קוליפורם צואתי / E.coli MUG once [Enterococcus EU Standard
+	/// (Good)] established 400 as its threshold too — see that measure's comment in _Measures;
+	/// no Israeli standard exists). BLANK (not a third bucket) for every other bacteria type,
+	/// so a slicer built on this column naturally excludes those rows once either "Above 400"
+	/// or "Below 400" is picked, instead of needing a separate "N/A" option.
+	column 'Exceedance Bucket' =
+			VAR Bact = RELATED(DimBacterialIndex[Bacterial index])
+			RETURN
+			    IF(
+			        Bact IN {"קוליפורם צואתי", "E.coli MUG", "סטרפטוקוק/אנטרוקוק ממוצא צואתי"},
+			        IF(FactRiverPollution[Result_Numeric] > 400 || FactRiverPollution[Result_Qualifier] = "TNTC", "Above 400", "Below 400"),
+			        BLANK()
+			    )
+		dataType: string
+		lineageTag: 7d4e91a6-2f83-4c5b-9a0e-6d1f8c3b52e9
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactRiverPollution = m
+		mode: import
+		source =
+				let
+				    Source = Table.Combine({river_pollution_2019, #"river_pollution_2020-2021", river_pollution_2022, river_pollution_2023, river_pollution_2024, river_pollution_2025, river_pollution_2026}),
+				    #"Removed Blank Rows" = Table.SelectRows(Source, each not List.IsEmpty(List.RemoveMatchingItems(Record.FieldValues(_), {"", null}))),
+				    #"Replaced Value" = Table.ReplaceValue(#"Removed Blank Rows",">1000.",">1000",Replacer.ReplaceText,{"Result CFU/100 ml"}),
+				    #"Added Custom" = Table.AddColumn(#"Replaced Value", "Result_Qualifier", each if Text.StartsWith(Text.From([#"Result CFU/100 ml"]), "<") then "<"
+				else if Text.StartsWith(Text.From([#"Result CFU/100 ml"]), ">") then ">"
+				else if [#"Result CFU/100 ml"] = "פלטה מכוסה" then "TNTC"
+				else "="),
+				    #"Added Custom1" = Table.AddColumn(#"Added Custom", "Result_Numeric", each if [#"Result CFU/100 ml"] = "פלטה מכוסה" then null
+				else try Number.FromText(Text.Select(Text.From([#"Result CFU/100 ml"]), {"0".."9"})) otherwise null),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Added Custom1",{{"Result_Numeric", Int64.Type}, {"Result_Qualifier", type text}}),
+				    #"Replaced Value2" = Table.ReplaceValue(#"Changed Type","","עין כיף",Replacer.ReplaceValue,{"Site"}),
+				    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","ירדן ","ירדן",Replacer.ReplaceText,{"Site"}),
+				    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","ירדןטבריה","ירדן טבריה",Replacer.ReplaceText,{"Site"}),
+				    #"Filtered Rows" = Table.SelectRows(#"Replaced Value4", each true),
+				    #"Trimmed Text" = Table.TransformColumns(#"Filtered Rows",{{"Location Name", Text.Trim, type text}}),
+				    #"Filtered Rows1" = Table.SelectRows(#"Trimmed Text", each true),
+				    #"Trimmed Text1" = Table.TransformColumns(#"Filtered Rows1",{{"Site", Text.Trim, type text}, {"Bacterial index", Text.Trim, type text}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Trimmed Text1",{{"Sample Date", type datetime}}),
+				    #"Replaced Value5" = Table.ReplaceValue(#"Changed Type1","כזיב בריכת עין תמיר","כזיב בריכת עין טמיר",Replacer.ReplaceText,{"Location Name"}),
+				    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","כזיב עין תמיר","כזיב עין טמיר",Replacer.ReplaceText,{"Location Name"}),
+				    #"Added Index" = Table.AddIndexColumn(#"Replaced Value6", "Index", 1, 1, Int64.Type),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Added Index",{"Index", "Location Point", "Sample Date", "Bacterial index", "Result CFU/100 ml", "Location Name", "Site", "Result_Qualifier", "Result_Numeric"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Reordered Columns",{{"Index", "ID"}}),
+				    #"Merged Queries" = Table.NestedJoin(#"Renamed Columns", {"Location Point", "Location Name", "Site"}, DimLocation, {"Location Point", "Location Name", "Site"}, "DimLocation", JoinKind.LeftOuter),
+				    #"Reordered Columns1" = Table.ReorderColumns(#"Merged Queries",{"ID", "Location Point", "DimLocation", "Sample Date", "Bacterial index", "Result CFU/100 ml", "Location Name", "Site", "Result_Qualifier", "Result_Numeric"}),
+				    #"Expanded DimLocation" = Table.ExpandTableColumn(#"Reordered Columns1", "DimLocation", {"LocationID"}, {"DimLocation.LocationID"}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Expanded DimLocation",{"Location Point", "Location Name", "Site"}),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Removed Columns",{{"DimLocation.LocationID", "LocationID"}}),
+				    #"Changed Type2" = Table.TransformColumnTypes(#"Renamed Columns1",{{"Sample Date", type date}}),
+				    #"Merged Queries1" = Table.NestedJoin(#"Changed Type2", {"Sample Date"}, DimDate, {"Date"}, "DimDate", JoinKind.LeftOuter),
+				    #"Reordered Columns2" = Table.ReorderColumns(#"Merged Queries1",{"ID", "LocationID", "DimDate", "Sample Date", "Bacterial index", "Result CFU/100 ml", "Result_Qualifier", "Result_Numeric"}),
+				    #"Removed Columns1" = Table.RemoveColumns(#"Reordered Columns2",{"Sample Date"}),
+				    #"Expanded DimDate" = Table.ExpandTableColumn(#"Removed Columns1", "DimDate", {"DateID"}, {"DimDate.DateID"}),
+				    #"Renamed Columns2" = Table.RenameColumns(#"Expanded DimDate",{{"DimDate.DateID", "DateID"}}),
+				    #"Replaced Value7" = Table.ReplaceValue(#"Renamed Columns2","קוליפורם צואתי ממוצע","קוליפורם צואתי",Replacer.ReplaceText,{"Bacterial index"}),
+				    #"Merged Queries2" = Table.NestedJoin(#"Replaced Value7", {"Bacterial index"}, DimBacterialIndex, {"Bacterial index"}, "DimBacterialIndex", JoinKind.LeftOuter),
+				    #"Expanded DimBactirialIndex" = Table.ExpandTableColumn(#"Merged Queries2", "DimBacterialIndex", {"BacterialID"}, {"DimBacterialIndex.BacterialID"}),
+				    #"Renamed Columns3" = Table.RenameColumns(#"Expanded DimBactirialIndex",{{"DimBacterialIndex.BacterialID", "BacterialID"}}),
+				    #"Reordered Columns3" = Table.ReorderColumns(#"Renamed Columns3",{"ID", "LocationID", "DateID", "BacterialID", "Bacterial index", "Result CFU/100 ml", "Result_Qualifier", "Result_Numeric"}),
+				    #"Removed Columns2" = Table.RemoveColumns(#"Reordered Columns3",{"Bacterial index"}),
+				    #"Filtered Rows2" = Table.SelectRows(#"Removed Columns2", each true)
+				in
+				    #"Filtered Rows2"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

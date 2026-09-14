@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "river_pollution"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "8be5f73d-95b4-473e-996a-3e334b9728d3"
+  }
+}

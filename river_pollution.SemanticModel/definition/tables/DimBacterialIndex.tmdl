@@ -1,0 +1,61 @@
+table DimBacterialIndex
+	lineageTag: b5e4c6d7-6794-419a-b41f-23a9d4f5ddc1
+
+	column BacterialID
+		dataType: int64
+		formatString: 0
+		lineageTag: ea46acb7-5a61-4a2b-9cfc-597f1b74048b
+		summarizeBy: none
+		sourceColumn: BacterialID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Bacterial index'
+		dataType: string
+		lineageTag: e0e76eb2-495c-4231-a4c5-caa633090531
+		summarizeBy: none
+		sourceColumn: Bacterial index
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimBacterialIndex = m
+		mode: import
+		source =
+				let
+				    Source = Table.Combine({river_pollution_2019, #"river_pollution_2020-2021", river_pollution_2022, river_pollution_2023, river_pollution_2024, river_pollution_2025, river_pollution_2026}),
+				    #"Removed Blank Rows" = Table.SelectRows(Source, each not List.IsEmpty(List.RemoveMatchingItems(Record.FieldValues(_), {"", null}))),
+				    #"Replaced Value" = Table.ReplaceValue(#"Removed Blank Rows",">1000.",">1000",Replacer.ReplaceText,{"Result CFU/100 ml"}),
+				    #"Added Custom" = Table.AddColumn(#"Replaced Value", "Result_Qualifier", each if Text.StartsWith(Text.From([#"Result CFU/100 ml"]), "<") then "<"
+				else if Text.StartsWith(Text.From([#"Result CFU/100 ml"]), ">") then ">"
+				else if [#"Result CFU/100 ml"] = "פלטה מכוסה" then "TNTC"
+				else "="),
+				    #"Added Custom1" = Table.AddColumn(#"Added Custom", "Result_Numeric", each if [#"Result CFU/100 ml"] = "פלטה מכוסה" then null
+				else try Number.FromText(Text.Select(Text.From([#"Result CFU/100 ml"]), {"0".."9"})) otherwise null),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Added Custom1",{{"Result_Numeric", Int64.Type}, {"Result_Qualifier", type text}}),
+				    #"Replaced Value2" = Table.ReplaceValue(#"Changed Type","","עין כיף",Replacer.ReplaceValue,{"Site"}),
+				    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","ירדן ","ירדן",Replacer.ReplaceText,{"Site"}),
+				    #"Filtered Rows" = Table.SelectRows(#"Replaced Value3", each true),
+				    #"Trimmed Text" = Table.TransformColumns(#"Filtered Rows",{{"Location Name", Text.Trim, type text}}),
+				    #"Filtered Rows1" = Table.SelectRows(#"Trimmed Text", each true),
+				    #"Trimmed Text1" = Table.TransformColumns(#"Filtered Rows1",{{"Site", Text.Trim, type text}, {"Bacterial index", Text.Trim, type text}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Trimmed Text1",{{"Sample Date", type datetime}}),
+				    #"Replaced Value4" = Table.ReplaceValue(#"Changed Type1","כזיב בריכת עין תמיר","כזיב בריכת עין טמיר",Replacer.ReplaceText,{"Location Name"}),
+				    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","כזיב עין תמיר","כזיב עין טמיר",Replacer.ReplaceText,{"Location Name"}),
+				    #"Sorted Rows" = Table.Sort(#"Replaced Value5",{{"Sample Date", Order.Ascending}}),
+				    #"Added Index" = Table.AddIndexColumn(#"Sorted Rows", "Index", 1, 1, Int64.Type),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Added Index",{"Index", "Location Point", "Sample Date", "Bacterial index", "Result CFU/100 ml", "Location Name", "Site", "Result_Qualifier", "Result_Numeric"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Reordered Columns",{{"Index", "ID"}}),
+				    #"Replaced Value6" = Table.ReplaceValue(#"Renamed Columns","קוליפורם צואתי ממוצע","קוליפורם צואתי",Replacer.ReplaceText,{"Bacterial index"}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Replaced Value6",{"ID", "Location Point", "Sample Date", "Result CFU/100 ml", "Location Name", "Site", "Result_Qualifier", "Result_Numeric"}),
+				    #"Removed Duplicates" = Table.Distinct(#"Removed Columns"),
+				    #"Added Index1" = Table.AddIndexColumn(#"Removed Duplicates", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Added Index1",{{"Index", "BactiralID"}}),
+				    #"Reordered Columns1" = Table.ReorderColumns(#"Renamed Columns1",{"BactiralID", "Bacterial index"}),
+				    #"Renamed Columns2" = Table.RenameColumns(#"Reordered Columns1",{{"BactiralID", "BacterialID"}})
+				in
+				    #"Renamed Columns2"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
