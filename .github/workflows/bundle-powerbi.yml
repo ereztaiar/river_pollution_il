@@ -1,0 +1,40 @@
+name: Bundle Power BI files
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/**"
+      - "river_pollution.pbip"
+      - "river_pollution.SemanticModel/**"
+      - "river_pollution.Report/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Zip Power BI project and data
+        run: |
+          zip -r river_pollution_bundle.zip \
+            river_pollution.pbip \
+            river_pollution.SemanticModel \
+            river_pollution.Report \
+            data
+
+      - name: Publish bundle to "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-bundle
+          name: Latest Power BI Bundle
+          body: >
+            Auto-updated bundle of the Power BI project and data files,
+            rebuilt from commit ${{ github.sha }}.
+          target_commitish: ${{ github.sha }}
+          files: river_pollution_bundle.zip
