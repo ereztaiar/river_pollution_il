@@ -10,3 +10,7 @@ relationship AutoDetected_6057de69-554a-4982-b695-cdf680e9af36
 	fromColumn: FactRiverPollution.BacterialID
 	toColumn: DimBacterialIndex.BacterialID
 
+relationship 6877c213-24b5-4c70-99e4-3c8a10fdb729
+	fromColumn: FactRiverPollution.LocationYearKey
+	toColumn: LocationYearSamples.LocationYearKey
+

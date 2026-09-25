@@ -83,6 +83,16 @@ table FactRiverPollution
 
 		annotation SummarizationSetBy = Automatic
 
+	/// Location x calendar-year key linking each sample to its row in LocationYearSamples,
+	/// so the "min sampling events" slicer on that table filters the fact per place per year.
+	column LocationYearKey = FactRiverPollution[LocationID] & "|" & RELATED(DimDate[Year])
+		dataType: string
+		isHidden
+		lineageTag: c56cc9c5-6bb2-4129-a413-d8033ba00d68
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
 	partition FactRiverPollution = m
 		mode: import
 		source =

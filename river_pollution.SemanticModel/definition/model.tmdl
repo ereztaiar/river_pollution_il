@@ -19,6 +19,7 @@ ref table DimDate
 ref table DimBacterialIndex
 ref table _Measures
 ref table DimBacterialIndexTooltip
+ref table LocationYearSamples
 
 ref cultureInfo en-US
 
