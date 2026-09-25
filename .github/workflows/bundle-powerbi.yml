@@ -8,6 +8,8 @@ on:
       - "river_pollution.pbip"
       - "river_pollution.SemanticModel/**"
       - "river_pollution.Report/**"
+      - "README.md"
+      - ".github/workflows/bundle-powerbi.yml"
   workflow_dispatch: {}
 
 permissions:
@@ -23,6 +25,7 @@ jobs:
       - name: Zip Power BI project and data
         run: |
           zip -r river_pollution_bundle.zip \
+            README.md \
             river_pollution.pbip \
             river_pollution.SemanticModel \
             river_pollution.Report \
@@ -33,8 +36,16 @@ jobs:
         with:
           tag_name: latest-bundle
           name: Latest Power BI Bundle
-          body: >
-            Auto-updated bundle of the Power BI project and data files,
-            rebuilt from commit ${{ github.sha }}.
+          body: |
+            Auto-updated bundle of the Power BI project and data files, rebuilt from commit ${{ github.sha }}.
+
+            ### How to open
+            1. Download `river_pollution_bundle.zip` below.
+            2. **Extract the whole zip first** (right-click > **Extract All…**).
+            3. Open `river_pollution.pbip` from the extracted folder in Power BI Desktop.
+
+            > ⚠️ Don't open the `.pbip` directly from inside the zip. Windows extracts only that one file to a temp folder, and Power BI fails with *"ReportDefinition: Required artifact is missing ... definition.pbir"*.
+
+            See the [README](https://github.com/${{ github.repository }}#readme) for what the report covers and where the data comes from.
           target_commitish: ${{ github.sha }}
           files: river_pollution_bundle.zip
