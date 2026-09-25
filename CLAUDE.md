@@ -68,6 +68,23 @@ and are visible:
   same three fecal-indicator bacteria as `Exceedance Count`/`%`; values are
   the literal English strings `"Above 400"`/`"Below 400"` baked into that
   column's DAX, not translated)
+- Min sampling events (`1eea78e9d5c242d251b3`, `slicer`, "Between" range on
+  `LocationYearSamples[Sampling Events]`, sync group `SyncMinSamples`) — a
+  fifth control added later. `LocationYearSamples` is a DAX calculated table
+  (one row per LocationID x calendar Year, `Sampling Events` = distinct
+  sample **dates**, so 3 bacteria read on one visit = 1) related 1:many to
+  the fact via the hidden `FactRiverPollution[LocationYearKey]` calc column.
+  Deliberately a precomputed per-year count rather than a measure: a slicer
+  can't filter on a measure, and a measure-based threshold couldn't be synced
+  or respected by the total cards/gauge. Consequence: with several years
+  selected, each location-year must meet the threshold on its own (15+15
+  samples in two years fails a ≥20 threshold). Hidden synced copies exist on
+  the same 6 pages as the other controls. TMDL gotcha hit while building it: a
+  calculated-table column that keeps lineage from another table (here via
+  `DISTINCT(FactRiverPollution[LocationYearKey])`) must declare
+  `sourceColumn: FactRiverPollution[LocationYearKey]`, not `[LocationYearKey]`
+  — the bare form leaves the column unbound and Desktop fails on load with
+  "Relationship ... uses an invalid column ID".
 
 Every other regular report page **except** `3d8bb27ccc65fca72a29` (see
 exception below) keeps its own hidden instance of all four slicers

@@ -1,0 +1,34 @@
+/// One row per LocationID x calendar Year that has any samples. 'Sampling Events' counts
+/// distinct sample dates (not bacteria rows), so three bacteria read on the same visit = 1.
+/// Filters FactRiverPollution via LocationYearKey; the control panel's "min sampling events"
+/// slicer (SyncMinSamples) sits on 'Sampling Events'. The threshold is evaluated per year:
+/// with several years selected, each location-year must meet it on its own.
+table LocationYearSamples
+	lineageTag: 24684345-348a-4168-b172-e6cfd177adf3
+
+	column LocationYearKey
+		isHidden
+		lineageTag: be9defdc-f84a-425c-a040-30908f1503c2
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: FactRiverPollution[LocationYearKey]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Sampling Events'
+		formatString: 0
+		lineageTag: 836102b1-b656-46ca-ab03-81dbe4a37639
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Sampling Events]
+
+		annotation SummarizationSetBy = User
+
+	partition LocationYearSamples = calculated
+		mode: import
+		source =
+				ADDCOLUMNS(
+				    DISTINCT(FactRiverPollution[LocationYearKey]),
+				    "Sampling Events", CALCULATE(DISTINCTCOUNT(FactRiverPollution[DateID]))
+				)
+
